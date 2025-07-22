@@ -28,6 +28,7 @@
       font-size: 48px;
       font-weight: bold;
       cursor: pointer;
+      user-select: none;
     }
 
     .white {
@@ -75,7 +76,7 @@
     <button onclick="setTime()">Set</button>
     <button onclick="resetClock()">Reset</button>
     <button onclick="togglePause()">Pause</button>
-    <div class="hint">[SPACE] to switch turn, [R] to reset, [P] to pause</div>
+    <div class="hint">[SPACE] to switch turn, or tap screen (mobile). [R] to reset, [P] to pause.</div>
   </div>
 
   <script>
@@ -161,6 +162,7 @@
       resetClock();
     }
 
+    // Keyboard support
     document.addEventListener("keydown", (e) => {
       if (e.code === "Space") {
         e.preventDefault();
@@ -171,6 +173,10 @@
         togglePause();
       }
     });
+
+    // Touch / click support
+    whiteEl.addEventListener("click", switchTurn);
+    blackEl.addEventListener("click", switchTurn);
 
     updateDisplay();
     updateClock();
