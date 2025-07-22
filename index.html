@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+  <meta charset="UTF-8">
+  <title>Amouzi Chess Clock</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      background: #eee;
+      direction: rtl;
+    }
+
+    .clock {
+      display: flex;
+      flex-direction: column;
+      height: 80vh;
+      margin: 1rem;
+    }
+
+    .timer {
+      flex: 1;
+      font-size: 3rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.3s;
+    }
+
+    .white {
+      background: white;
+      color: black;
+    }
+
+    .black {
+      background: black;
+      color: white;
+    }
+
+    .controls {
+      margin-top: 10px;
+    }
+
+    .controls input, .controls button {
+      font-size: 1rem;
+      margin: 5px;
+      padding: 0.4rem 1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>ساعت شطرنج آموزشی</h1>
+
+  <div class="clock">
+    <div id="white" class="timer white">05:00.0</div>
+    <div id="black" class="timer black">05:00.0</div>
+  </div>
+
+  <div class="controls">
+    زمان (دقیقه):
+    <input type="number" id="set-time" value="5" min="1" step="0.5">
+    <button onclick="setTime()">تنظیم</button>
+    <button onclick="resetGame()">ریست</button>
+    <button onclick="pauseResume()">توقف / ادامه</button>
+  </div>
+
+  <script>
+    let initialMinutes = 5;
+    let timeWhite = initialMinutes * 60;
+    let timeBlack = initialMinutes * 60;
+    let active = null;
+    let running = false;
+    let lastUpdate = null;
+    let interval = null;
+
+    const whiteDiv = document.getElementById("white");
+    const blackDiv = document.getElementById("black");
+
+    function formatTime(seconds) {
+      const m = Math.floor(seconds / 60);
+      const s = Math.floor(seconds % 60);
+      const ds = Math.floor((seconds % 1) * 10);
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${ds}`;
+    }
+
+    function updateDisplay() {
+      whiteDiv.textContent = formatTime(Math.max(0, timeWhite));
+      blackDiv.textContent = formatTime(Math.max(0, timeBlack));
+    }
+
+    function tick() {
+      if (!running || !active) return;
+      const now = performance.now() / 1000;
+      const delta = now - lastUpdate;
+      lastUpdate = now;
+
+      if (active === "white") {
+        timeWhite -= delta;
+        if (timeWhite <= 0) {
+          timeWhite = 0;
+          running = false;
+          alert("برنده: سیاه");
+        }
+      } else {
+        timeBlack -= delta;
+        if (timeBlack <= 0) {
+          timeBlack = 0;
+          running = false;
+          alert("برنده: سفید");
+        }
+      }
+
+      updateDisplay();
+    }
+
+    function start(side) {
+      if (!running) {
+        running = true;
+        active = side === "white" ? "black" : "white";
+        lastUpdate = performance.now() / 1000;
+        interval = setInterval(tick, 100);
+      } else {
+        active = side;
+        lastUpdate = performance.now() / 1000;
+      }
+    }
+
+    whiteDiv.addEventListener("click", () => start("white"));
+    blackDiv.addEventListener("click", () => start("black"));
+
+    function setTime() {
+      const minutes = parseFloat(document.getElementById("set-time").value);
+      if (minutes <= 0 || isNaN(minutes)) {
+        alert("زمان نامعتبر است!");
+        return;
+      }
+      initialMinutes = minutes;
+      resetGame();
+    }
+
+    function resetGame() {
+      timeWhite = initialMinutes * 60;
+      timeBlack = initialMinutes * 60;
+      running = false;
+      active = null;
+      clearInterval(interval);
+      updateDisplay();
+    }
+
+    function pauseResume() {
+      if (running) {
+        running = false;
+        clearInterval(interval);
+      } else if (active) {
+        running = true;
+        lastUpdate = performance.now() / 1000;
+        interval = setInterval(tick, 100);
+      }
+    }
+
+    // شروع اولیه
+    updateDisplay();
+  </script>
+
+</body>
+</html>
